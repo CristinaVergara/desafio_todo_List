@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo List - Desafío</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Arial', sans-serif;
+        }
+        .card {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border: none;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .card-header {
+            border-radius: 10px 10px 0 0 !important;
+        }
+        .list-group-item {
+            border: 1px solid #dee2e6;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            padding: 15px;
+        }
+        .tarea-completada {
+            text-decoration: line-through;
+            background-color: #d4edda;
+            opacity: 0.8;
+        }
+        .btn-sm {
+            margin-left: 5px;
+        }
+        .resumen {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row">
+            <!-- Resumen -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h3>Todo List</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="nuevaTarea" class="form-label">Nueva tarea</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="nuevaTarea" placeholder="Descripción de la tarea">
+                                <button class="btn btn-primary" id="agregarTarea">Agregar</button>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="resumen">
+                            <p><strong>Total:</strong> <span id="totalTareas">0</span></p>
+                            <p><strong>Realizadas:</strong> <span id="tareasRealizadas">0</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista de tareas -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h4>Lista de Tareas</h4>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group" id="listaTareas">
+                            <!-- Las tareas se renderizarán aquí -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // ========== CÓDIGO JAVASCRIPT COMPLETO ==========
+        
+        // Arreglo de tareas con 3 tareas iniciales
+        let tareas = [
+            { id: 1, description: "Estudiar JavaScript", realizada: false },
+            { id: 2, description: "Hacer ejercicio", realizada: false },
+            { id: 3, description: "Leer un libro", realizada: true }
+        ];
+
+        // Elementos del DOM
+        const inputNuevaTarea = document.getElementById('nuevaTarea');
+        const btnAgregarTarea = document.getElementById('agregarTarea');
+        const listaTareas = document.getElementById('listaTareas');
+        const totalTareas = document.getElementById('totalTareas');
+        const tareasRealizadas = document.getElementById('tareasRealizadas');
+
+        // Función para renderizar las tareas
+        function renderizarTareas() {
+            listaTareas.innerHTML = '';
+            
+            tareas.forEach(tarea => {
+                const li = document.createElement('li');
+                li.className = `list-group-item d-flex justify-content-between align-items-center ${tarea.realizada ? 'tarea-completada' : ''}`;
+                
+                li.innerHTML = `
+                    <div>
+                        <span class="badge bg-secondary me-2">ID: ${tarea.id}</span>
+                        ${tarea.description}
+                        ${tarea.realizada ? '<span class="badge bg-success ms-2">Realizada</span>' : ''}
+                    </div>
+                    <div>
+                        <button class="btn btn-sm ${tarea.realizada ? 'btn-warning' : 'btn-success'}" onclick="cambiarEstadoTarea(${tarea.id})">
+                            ${tarea.realizada ? 'Desmarcar' : 'Completar'}
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="eliminarTarea(${tarea.id})">
+                            Eliminar
+                        </button>
+                    </div>
+                `;
+                
+                listaTareas.appendChild(li);
+            });
+            
+            actualizarResumen();
+        }
+
+        // Función para actualizar el resumen
+        function actualizarResumen() {
+            totalTareas.textContent = tareas.length;
+            
+            const realizadas = tareas.filter(tarea => tarea.realizada).length;
+            tareasRealizadas.textContent = realizadas;
+        }
+
+        // Función para agregar nueva tarea
+        function agregarTarea() {
+            const description = inputNuevaTarea.value.trim();
+            
+            if (description === '') {
+                alert('Por favor, ingresa una descripción para la tarea');
+                return;
+            }
+            
+            // Crear nueva tarea
+            const nuevaTarea = {
+                id: Date.now(),
+                description: description,
+                realizada: false
+            };
+            
+            tareas.push(nuevaTarea);
+            inputNuevaTarea.value = '';
+            inputNuevaTarea.focus();
+            
+            renderizarTareas();
+        }
+
+        // Función para eliminar tarea
+        function eliminarTarea(id) {
+            if (confirm('¿Estás seguro de que quieres eliminar esta tarea?')) {
+                const index = tareas.findIndex(tarea => tarea.id === id);
+                
+                if (index !== -1) {
+                    tareas.splice(index, 1);
+                    renderizarTareas();
+                }
+            }
+        }
+
+        // Función para cambiar estado de tarea (usando find como en el material teórico)
+        function cambiarEstadoTarea(id) {
+            const tarea = tareas.find(tarea => tarea.id === id);
+            
+            if (tarea) {
+                tarea.realizada = !tarea.realizada;
+                renderizarTareas();
+            }
+        }
+
+        // Event Listeners
+        btnAgregarTarea.addEventListener('click', agregarTarea);
+
+        inputNuevaTarea.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                agregarTarea();
+            }
+        });
+
+        // Inicializar la aplicación
+        document.addEventListener('DOMContentLoaded', function() {
+            renderizarTareas();
+            
+            // Hacer funciones globales disponibles
+            window.eliminarTarea = eliminarTarea;
+            window.cambiarEstadoTarea = cambiarEstadoTarea;
+            window.renderizarTareas = renderizarTareas;
+            
+            console.log('✅ Todo List inicializado correctamente');
+            console.log('Funciones disponibles: eliminarTarea(id), cambiarEstadoTarea(id), renderizarTareas()');
+        });
+
+        // ========== FUNCIONES DE DEBUGGING ==========
+        function verTareasConsola() {
+            console.log('=== TAREAS ACTUALES ===');
+            console.table(tareas);
+            console.log('Total:', tareas.length);
+            console.log('Realizadas:', tareas.filter(t => t.realizada).length);
+        }
+
+        function agregarTareaDebug(desc) {
+            const nuevaTarea = {
+                id: Date.now(),
+                description: desc,
+                realizada: false
+            };
+            tareas.push(nuevaTarea);
+            renderizarTareas();
+            console.log('✅ Tarea agregada:', desc);
+        }
+
+        // Hacer disponibles para consola
+        window.verTareasConsola = verTareasConsola;
+        window.agregarTareaDebug = agregarTareaDebug;
+    </script>
+</body>
+</html>
